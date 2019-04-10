@@ -48,9 +48,9 @@ service_create() {
   echo "$PASSWORD" > "$SERVICE_ROOT/PASSWORD"
   chmod 640 "$SERVICE_ROOT/PASSWORD"
 
-  [[ -n "$SERVICE_CUSTOM_ENV" ]] && COUCHDB_CUSTOM_ENV="$SERVICE_CUSTOM_ENV"
-  if [[ -n $COUCHDB_CUSTOM_ENV ]]; then
-    echo "$COUCHDB_CUSTOM_ENV" | tr ';' "\n" > "$SERVICE_ROOT/ENV"
+  [[ -n "$SERVICE_CUSTOM_ENV" ]] && COUCHBASE_CUSTOM_ENV="$SERVICE_CUSTOM_ENV"
+  if [[ -n $COUCHBASE_CUSTOM_ENV ]]; then
+    echo "$COUCHBASE_CUSTOM_ENV" | tr ';' "\n" > "$SERVICE_ROOT/ENV"
   else
     echo "" > "$SERVICE_ROOT/ENV"
   fi
@@ -63,7 +63,7 @@ service_create_container() {
   local SERVICE_HOST_ROOT="$PLUGIN_DATA_HOST_ROOT/$SERVICE"
   local SERVICE_NAME="$(get_service_name "$SERVICE")"
 
-  ID=$(docker run --name "$SERVICE_NAME" -v "$SERVICE_HOST_ROOT/data:/data" -e "COUCHDB_USER=$SERVICE" -e "COUCHDB_PASSWORD=$PASSWORD" -e "COUCHDB_DBNAME=$SERVICE" --env-file="$SERVICE_ROOT/ENV" -d --restart always --label dokku=service --label "dokku.service=$PLUGIN_COMMAND_PREFIX" "$PLUGIN_IMAGE:$PLUGIN_IMAGE_VERSION")
+  ID=$(docker run --name "$SERVICE_NAME" -v "$SERVICE_HOST_ROOT/data:/data" -e "COUCHBASE_USER=$SERVICE" -e "COUCHBASE_PASSWORD=$PASSWORD" -e "COUCHBASE_DBNAME=$SERVICE" --env-file="$SERVICE_ROOT/ENV" -d --restart always --label dokku=service --label "dokku.service=$PLUGIN_COMMAND_PREFIX" "$PLUGIN_IMAGE:$PLUGIN_IMAGE_VERSION")
   echo "$ID" > "$SERVICE_ROOT/ID"
 
   dokku_log_verbose_quiet "Waiting for container to be ready"
@@ -86,8 +86,8 @@ service_export() {
   local PASSWORD="$(cat "$SERVICE_ROOT/PASSWORD")"
 
   [[ -n $SSH_TTY ]] && stty -opost
-  docker exec "$SERVICE_NAME" bash -c "[[ ! -f /usr/local/bin/couchdb-backup ]] && curl $COUCHDB_BACKUP -s -o /usr/local/bin/couchdb-backup && chmod +x /usr/local/bin/couchdb-backup" || true
-  docker exec "$SERVICE_NAME" bash -c "DIR=\$(mktemp -d) && couchdb-backup -b -H localhost -d \"$SERVICE\" -f \"\$DIR/$SERVICE.json\" -u \"$SERVICE\" -p \"$PASSWORD\" > /dev/null 2>&1 && cat \"\$DIR/$SERVICE.json\" && rm -rf \"\$DIR\""
+  docker exec "$SERVICE_NAME" bash -c "[[ ! -f /usr/local/bin/couchbase-backup ]] && curl $COUCHBASE_BACKUP -s -o /usr/local/bin/couchbase-backup && chmod +x /usr/local/bin/couchbase-backup" || true
+  docker exec "$SERVICE_NAME" bash -c "DIR=\$(mktemp -d) && couchbase-backup -b -H localhost -d \"$SERVICE\" -f \"\$DIR/$SERVICE.json\" -u \"$SERVICE\" -p \"$PASSWORD\" > /dev/null 2>&1 && cat \"\$DIR/$SERVICE.json\" && rm -rf \"\$DIR\""
   status=$?
   [[ -n $SSH_TTY ]] && stty opost
   exit $status
@@ -103,8 +103,8 @@ service_import() {
   if [[ -t 0 ]]; then
     dokku_log_fail "No data provided on stdin."
   fi
-  docker exec "$SERVICE_NAME" bash -c "[[ ! -f /usr/local/bin/couchdb-backup ]] && curl $COUCHDB_BACKUP -s -o /usr/local/bin/couchdb-backup && chmod +x /usr/local/bin/couchdb-backup" || true
-  docker exec -i "$SERVICE_NAME" bash -c "DIR=\$(mktemp -d) && cat > \"\$DIR/$SERVICE.json\" && couchdb-backup -r -H localhost -d \"$SERVICE\" -f \"\$DIR/$SERVICE.json\" -u \"$SERVICE\" -p \"$PASSWORD\" && rm -rf \"\$DIR\""
+  docker exec "$SERVICE_NAME" bash -c "[[ ! -f /usr/local/bin/couchbase-backup ]] && curl $COUCHBASE_BACKUP -s -o /usr/local/bin/couchbase-backup && chmod +x /usr/local/bin/couchbase-backup" || true
+  docker exec -i "$SERVICE_NAME" bash -c "DIR=\$(mktemp -d) && cat > \"\$DIR/$SERVICE.json\" && couchbase-backup -r -H localhost -d \"$SERVICE\" -f \"\$DIR/$SERVICE.json\" -u \"$SERVICE\" -p \"$PASSWORD\" && rm -rf \"\$DIR\""
 }
 
 # required by common-functions

@@ -35,29 +35,29 @@ teardown() {
 
 @test "($PLUGIN_COMMAND_PREFIX:promote) error when the service is already promoted" {
   run dokku "$PLUGIN_COMMAND_PREFIX:promote" l my_app
-  assert_contains "${lines[*]}" "already promoted as COUCHDB_URL"
+  assert_contains "${lines[*]}" "already promoted as COUCHBASE_URL"
 }
 
-@test "($PLUGIN_COMMAND_PREFIX:promote) changes COUCHDB_URL" {
+@test "($PLUGIN_COMMAND_PREFIX:promote) changes COUCHBASE_URL" {
   password="$(sudo cat "$PLUGIN_DATA_ROOT/l/PASSWORD")"
-  dokku config:set my_app "COUCHDB_URL=http://u:p@host:5984/db" "DOKKU_COUCHDB_BLUE_URL=http://l:$password@dokku-couchdb-l:5984/l"
+  dokku config:set my_app "COUCHBASE_URL=http://u:p@host:5984/db" "DOKKU_COUCHBASE_BLUE_URL=http://l:$password@dokku-couchbase-l:5984/l"
   dokku "$PLUGIN_COMMAND_PREFIX:promote" l my_app
-  url=$(dokku config:get my_app COUCHDB_URL)
-  assert_equal "$url" "http://l:$password@dokku-couchdb-l:5984/l"
+  url=$(dokku config:get my_app COUCHBASE_URL)
+  assert_equal "$url" "http://l:$password@dokku-couchbase-l:5984/l"
 }
 
 @test "($PLUGIN_COMMAND_PREFIX:promote) creates new config url when needed" {
   password="$(sudo cat "$PLUGIN_DATA_ROOT/l/PASSWORD")"
-  dokku config:set my_app "COUCHDB_URL=http://u:p@host:5984/db" "DOKKU_COUCHDB_BLUE_URL=http://l:$password@dokku-couchdb-l:5984/l"
+  dokku config:set my_app "COUCHBASE_URL=http://u:p@host:5984/db" "DOKKU_COUCHBASE_BLUE_URL=http://l:$password@dokku-couchbase-l:5984/l"
   dokku "$PLUGIN_COMMAND_PREFIX:promote" l my_app
   run dokku config my_app
-  assert_contains "${lines[*]}" "DOKKU_COUCHDB_"
+  assert_contains "${lines[*]}" "DOKKU_COUCHBASE_"
 }
 
-@test "($PLUGIN_COMMAND_PREFIX:promote) uses COUCHDB_DATABASE_SCHEME variable" {
+@test "($PLUGIN_COMMAND_PREFIX:promote) uses COUCHBASE_DATABASE_SCHEME variable" {
   password="$(sudo cat "$PLUGIN_DATA_ROOT/l/PASSWORD")"
-  dokku config:set my_app "COUCHDB_DATABASE_SCHEME=couchdb2" "COUCHDB_URL=http://u:p@host:5984/db" "DOKKU_COUCHDB_BLUE_URL=couchdb2://l:$password@dokku-couchdb-l:5984/l"
+  dokku config:set my_app "COUCHBASE_DATABASE_SCHEME=couchbase2" "COUCHBASE_URL=http://u:p@host:5984/db" "DOKKU_COUCHBASE_BLUE_URL=couchbase2://l:$password@dokku-couchbase-l:5984/l"
   dokku "$PLUGIN_COMMAND_PREFIX:promote" l my_app
-  url=$(dokku config:get my_app COUCHDB_URL)
-  assert_contains "$url" "couchdb2://l:$password@dokku-couchdb-l:5984/l"
+  url=$(dokku config:get my_app COUCHBASE_URL)
+  assert_contains "$url" "couchbase2://l:$password@dokku-couchbase-l:5984/l"
 }
